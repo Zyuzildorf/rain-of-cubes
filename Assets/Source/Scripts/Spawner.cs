@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Pool;
 using Random = UnityEngine.Random;
 
-public class Spawner : MonoBehaviour
+public abstract class Spawner : MonoBehaviour
 {
     [SerializeField] private Poollable _template;
     [SerializeField] private float _repeatRate = 1f;
@@ -12,39 +12,49 @@ public class Spawner : MonoBehaviour
     private GameObject _startPoint;
     private ObjectPool<Poollable> _pool;
 
-    public ObjectPool<Poollable> SpawnObjects()
+    public abstract void InitilizePoolable(Poollable poollable);
+    
+    public void ReleasePoolable(Poollable poollable)
+    {
+        _pool.Release(poollable);
+    }    
+
+    private void Awake()
     {
         _pool = new ObjectPool<Poollable>(
-        createFunc: () => Instantiate(_template),
-        actionOnGet: (obj) => ActionOnGet(obj),
-        actionOnRelease: (obj) => obj.gameObject.SetActive(false),
-        actionOnDestroy: (obj) => Destroy(obj),
-        collectionCheck: true,
-        defaultCapacity: _poolCapacity,
-        maxSize: _poolMaxSize);
-
-        StartInfiniteSpawning();
-        
-        return _pool;
+            createFunc: () => CreatePoolable(),
+            actionOnGet: (obj) => ActionOnGet(obj),
+            actionOnRelease: (obj) => obj.gameObject.SetActive(false),
+            actionOnDestroy: (obj) => Destroy(obj),
+            collectionCheck: true,
+            defaultCapacity: _poolCapacity,
+            maxSize: _poolMaxSize);
     }
-    
-    private void StartInfiniteSpawning()
+
+    private void Start()
     {
-        InvokeRepeating(nameof(GetObject),0.0f, _repeatRate);
+        InvokeRepeating(nameof(GetObject), 0.0f, _repeatRate);
+    }
+
+    private Poollable CreatePoolable()
+    {
+        Poollable poollable = Instantiate(_template);
+        InitilizePoolable(poollable);
+
+        return poollable;
     }
     
     private void GetObject()
     {
         _pool.Get();
     }
-    
-    private void ActionOnGet(Poollable obj)
+
+    private void ActionOnGet(Poollable poollable)
     {
-        obj.transform.position = GetRandomPosition();
-        obj.GetComponent<Rigidbody>().velocity = Vector3.zero;
-        obj.gameObject.SetActive(true);
+        poollable.transform.position = GetRandomPosition();
+        poollable.gameObject.SetActive(true);
     }
-    
+
     private Vector3 GetRandomPosition()
     {
         float xPosition;
@@ -55,6 +65,6 @@ public class Spawner : MonoBehaviour
         xPosition = Random.Range(minRandom, maxRandom);
         zPosition = Random.Range(minRandom, maxRandom);
 
-        return new Vector3(xPosition,_template.transform.position.y,zPosition);
+        return new Vector3(xPosition, _template.transform.position.y, zPosition);
     }
 }

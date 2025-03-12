@@ -1,12 +1,16 @@
-using System;
 using UnityEngine;
 
 public class Poollable : MonoBehaviour
 {
-    public event Action<Poollable> OnDisabled;
+    private Spawner _spawner;
 
-    public void Disable()
+    public void ReturnObjectToPool()
     {
-        OnDisabled?.Invoke(this);
+        _spawner.ReleasePoolable(this);
+    }
+    
+    public void Initialize(Spawner spawner)
+    {
+        _spawner = spawner;
     }
 }

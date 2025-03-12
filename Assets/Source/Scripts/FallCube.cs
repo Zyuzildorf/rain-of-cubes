@@ -9,21 +9,30 @@ public class FallCube : MonoBehaviour
     [SerializeField] private Colourable _colourable;
     [SerializeField] private Vector2 _minMaxLifeTime = new Vector2(2, 5);
 
-    public Poollable Poollable => _poollable;
-    public Colourable Colourable => _colourable;
-    
     private float _lifeTime;
-    
-    public event Action ObjectEnteredTrigger;
-    public event Action OnEndedLifeTime;
 
-    private void OnTriggerEnter(Collider other)
+    public void Initialize(Spawner spawner, RandomColorChanger randomColorChanger)
     {
-        ObjectEnteredTrigger?.Invoke();
-        _colourable.PreferColorChange();
+        _colourable.Initialize(randomColorChanger);
+        _poollable.Initialize(spawner);
+    }
+
+    private void OnEnable()
+    {
+        _colourable.ResetColor();
+    }
+
+    private void OnCollisionEnter(Collision other)
+    {
+        if (other.gameObject.TryGetComponent(out FallCube fallCube))
+        {
+            return;
+        }
+
+        _colourable.SetRandomColor();
         StartLifeTimeDecreasing();
     }
-    
+
     private void StartLifeTimeDecreasing()
     {
         GetRandomLifeTime();
@@ -42,7 +51,7 @@ public class FallCube : MonoBehaviour
             _lifeTime -= Time.deltaTime;
             yield return null;
         }
-        
-        _poollable.Disable();
+
+        _poollable.ReturnObjectToPool();
     }
 }

@@ -1,28 +1,37 @@
-
-using System;
 using UnityEngine;
 
 public class Colourable : MonoBehaviour
 {
     [SerializeField] private MeshRenderer _meshRenderer;
-    
-    public bool ColorChanged { get; private set; } = false;
-    public event Action<Colourable> OnPreferColorChange;
+    [SerializeField] private Material _defaultMaterial;
 
-    public void PreferColorChange()
+    private RandomColorChanger _randomColorChanger;
+
+    public bool ColorChanged { get; private set; } = false;
+
+    public void Initialize(RandomColorChanger randomColorChanger)
     {
-        OnPreferColorChange?.Invoke(this);
-    }
-    
-    public void Initialize(Material newMaterial)
-    {
-        if (newMaterial == null)
+        if (randomColorChanger == null)
         {
-            Debug.LogError("material is null");
+            Debug.LogError("Ошибка.");
             return;
         }
 
-        _meshRenderer.material = newMaterial;
-        ColorChanged = true;
+        _randomColorChanger = randomColorChanger;
+    }
+
+    public void SetRandomColor()
+    {
+        if (ColorChanged == false)
+        {
+            _randomColorChanger.SetRandomColor(_meshRenderer);
+            ColorChanged = true;
+        }
+    }
+
+    public void ResetColor()
+    {
+        _meshRenderer.material = _defaultMaterial;
+        ColorChanged = false;
     }
 }
