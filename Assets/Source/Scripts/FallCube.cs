@@ -5,31 +5,28 @@ using UnityEngine;
 
 public class FallCube : MonoBehaviour
 {
-    [SerializeField] private Poollable _poollable;
-    [SerializeField] private Colourable _colourable;
     [SerializeField] private Vector2 _minMaxLifeTime = new Vector2(2, 5);
+    [SerializeField] private MeshRenderer _meshRenderer;
+    [SerializeField] private RandomColorChanger _randomColorChanger;
 
     private float _lifeTime;
+    private bool _colorChanged = false;
 
-    public void Initialize(Spawner spawner, RandomColorChanger randomColorChanger)
-    {
-        _colourable.Initialize(randomColorChanger);
-        _poollable.Initialize(spawner);
-    }
-
-    private void OnEnable()
-    {
-        _colourable.ResetColor();
-    }
+    public event Action<FallCube> OnLifeTimeEnded;
 
     private void OnCollisionEnter(Collision other)
     {
-        if (other.gameObject.TryGetComponent(out FallCube fallCube))
+        if(other.gameObject.TryGetComponent(out FallCube fallCube))
         {
             return;
         }
-
-        _colourable.SetRandomColor();
+        
+        if (_colorChanged == false)
+        {
+            _randomColorChanger.SetRandomColor(_meshRenderer);
+            _colorChanged = true;
+        }
+        
         StartLifeTimeDecreasing();
     }
 
@@ -52,6 +49,6 @@ public class FallCube : MonoBehaviour
             yield return null;
         }
 
-        _poollable.ReturnObjectToPool();
+        OnLifeTimeEnded?.Invoke(this);
     }
 }
