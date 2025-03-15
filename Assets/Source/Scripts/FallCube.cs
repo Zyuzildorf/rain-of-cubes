@@ -9,7 +9,6 @@ public class FallCube : MonoBehaviour
     [SerializeField] private MeshRenderer _meshRenderer;
     [SerializeField] private RandomColorChanger _randomColorChanger;
 
-    private float _lifeTime;
     private bool _colorChanged = false;
 
     public event Action<FallCube> OnLifeTimeEnded;
@@ -32,20 +31,21 @@ public class FallCube : MonoBehaviour
 
     private void StartLifeTimeDecreasing()
     {
-        GetRandomLifeTime();
-        StartCoroutine(nameof(DecreaseLifeTime));
+        StartCoroutine(DecreaseLifeTime(GetRandomLifeTime()));
     }
 
-    private void GetRandomLifeTime()
+    private float GetRandomLifeTime()
     {
-        _lifeTime = Convert.ToInt32(Random.Range(_minMaxLifeTime.x, _minMaxLifeTime.y));
+        float lifeTime = Convert.ToInt32(Random.Range(_minMaxLifeTime.x, _minMaxLifeTime.y));
+
+        return lifeTime;
     }
 
-    private IEnumerator DecreaseLifeTime()
+    private IEnumerator DecreaseLifeTime(float lifeTime)
     {
-        while (_lifeTime >= 0)
+        while (lifeTime >= 0)
         {
-            _lifeTime -= Time.deltaTime;
+            lifeTime -= Time.deltaTime;
             yield return null;
         }
 
